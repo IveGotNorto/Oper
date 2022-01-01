@@ -26,9 +26,12 @@ func (v *Vaults) Retrieve() error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
 
+func (v *Vaults) retrieveItems() error {
 	for i, vault := range *v {
-		vItems, err := items.RetrieveByUuid(vault.Uuid)
+		vItems, err := items.RetrieveByVault(vault.Uuid)
 		if err != nil {
 			return err
 		}
@@ -38,16 +41,18 @@ func (v *Vaults) Retrieve() error {
 	return nil
 }
 
-func (v *Vaults) Display() error {
+func (v *Vaults) Display() {
 	for _, vault := range *v {
 		fmt.Printf("%v\n", vault.Name)
 	}
-	return nil
 }
 
 func (v *Vaults) PrettyPrint() error {
 	fmt.Printf("One Password Store\n")
-
+	err := v.retrieveItems()
+	if err != nil {
+		return err
+	}
 	numVaults := len(*v) - 1
 
 	for i, vault := range *v {
@@ -74,9 +79,7 @@ func (v *Vaults) PrettyPrint() error {
 			}
 		}
 	}
-
 	return nil
-
 }
 
 func (v *Vaults) Find(pass []string) (items.Item, error) {

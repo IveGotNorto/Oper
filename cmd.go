@@ -18,26 +18,26 @@ func main() {
 		Version:  "v0.0.1",
 		Compiled: time.Now(),
 		Authors: []*cli.Author{
-			&cli.Author{
+			{
 				Name:  "Norto",
 				Email: "ivegot@norto.dev",
 			},
 		},
-		//Copyright: "(c) 2021 Norto Studios",
 		Usage: "One Password command line wrapper",
 		Commands: []*cli.Command{
-			&cli.Command{
+			{
 				Name:        "ls",
 				Aliases:     []string{"list"},
 				Description: "List passwords in the One Password Command line utility",
 				Action: func(c *cli.Context) error {
-					return OpPrint(&items)
+					OpPrint(&items)
+					return nil
 				},
 				Before: func(c *cli.Context) error {
 					return items.Retrieve()
 				},
 			},
-			&cli.Command{
+			{
 				Name:        "show",
 				Description: "Print the password under the password-name",
 				Action: func(c *cli.Context) error {

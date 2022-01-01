@@ -5,7 +5,7 @@ import (
 )
 
 type OPDisplay interface {
-	Display() error
+	Display()
 	PrettyPrint() error
 	Retrieve() error
 	Find([]string) (items.Item, error)
@@ -15,9 +15,8 @@ type OPInteract interface {
 	Show(string) error
 }
 
-func OpPrint(op OPDisplay) error {
-	err := op.Display()
-	return err
+func OpPrint(op OPDisplay) {
+	op.Display()
 }
 
 func OpPrettyPrint(op OPDisplay) error {

@@ -60,11 +60,10 @@ func (i *Items) Retrieve() error {
 	return err
 }
 
-func (i *Items) Display() error {
+func (i *Items) Display() {
 	for _, item := range *i {
 		fmt.Printf("%v\n", item.Overview.Title)
 	}
-	return nil
 }
 
 func (i *Items) PrettyPrint() error {
@@ -91,7 +90,7 @@ func (i *Items) Show(entry string) error {
 	return err
 }
 
-func RetrieveByUuid(uuid string) (*Items, error) {
+func RetrieveByVault(uuid string) (*Items, error) {
 	com, err := exec.Command("op", "--cache", "list", "items", "--vault", uuid).Output()
 	if err != nil {
 		return nil, err
