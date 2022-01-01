@@ -1,48 +1,51 @@
-package main
+package vaults
 
 import (
-	"encoding/json"
 	"fmt"
+	items "oper/items"
 	"os/exec"
 )
 
+//easyjson:json
 type Vault struct {
-	Uuid  string
-	Name  string
-	Items *[]Item
+	Uuid     string `json:"uuid"`
+	Name     string `json:"name"`
+	Items    *items.Items
+	numItems int
 }
 
+//easyjson:json
 type Vaults []Vault
 
-func (v *Vaults) retrieve() error {
+func (v *Vaults) Retrieve() error {
 	out, err := exec.Command("op", "--cache", "list", "vaults").Output()
-	json.Unmarshal(out, &v)
+	if err != nil {
+		return err
+	}
+	err = v.UnmarshalJSON(out)
 	if err != nil {
 		return err
 	}
 
 	for i, vault := range *v {
-		com, err := exec.Command("op", "--cache", "list", "items", "--vault", vault.Uuid).Output()
+		vItems, err := items.RetrieveByUuid(vault.Uuid)
 		if err != nil {
 			return err
 		}
-		json.Unmarshal(com, &(*v)[i].Items)
+		(*v)[i].Items = vItems
+		(*v)[i].numItems = len(*vItems)
 	}
 	return nil
 }
 
-func (v *Vaults) display() error {
-	err := v.retrieve()
-	if err != nil {
-		return err
-	}
+func (v *Vaults) Display() error {
 	for _, vault := range *v {
 		fmt.Printf("%v\n", vault.Name)
 	}
 	return nil
 }
 
-func (v *Vaults) prettyPrint() error {
+func (v *Vaults) PrettyPrint() error {
 	fmt.Printf("One Password Store\n")
 
 	numVaults := len(*v) - 1
@@ -55,17 +58,15 @@ func (v *Vaults) prettyPrint() error {
 			fmt.Printf("└── %v\n", vault.Name)
 		}
 
-		numItems := len(*vault.Items) - 1
-
 		for j, item := range *vault.Items {
 			if i != numVaults {
-				if j != numItems {
+				if j != vault.numItems-1 {
 					fmt.Printf("│   ├── %v\n", item.Overview.Title)
 				} else {
 					fmt.Printf("│   └── %v\n", item.Overview.Title)
 				}
 			} else {
-				if j != numItems {
+				if j != vault.numItems-1 {
 					fmt.Printf("    ├── %v\n", item.Overview.Title)
 				} else {
 					fmt.Printf("    └── %v\n", item.Overview.Title)
@@ -78,6 +79,6 @@ func (v *Vaults) prettyPrint() error {
 
 }
 
-func (v *Vaults) find(pass []string) (Item, error) {
-	return Item{}, nil
+func (v *Vaults) Find(pass []string) (items.Item, error) {
+	return items.Item{}, nil
 }

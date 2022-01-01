@@ -1,14 +1,11 @@
 #!/bin/sh 
 
-# Force login
 source ./oper 
-
-password=$(./main | dmenu -c -i -p "One Password:")
-if [ -n "$password" ]; then
-  ./main show -password="$password"
-fi
+BASE64="base64"
+CLIP_TIME=45
 
 clip() {
+  read input
 	if [[ -n $WAYLAND_DISPLAY ]]; then
 		local copy_cmd=( wl-copy )
 		local paste_cmd=( wl-paste -n )
@@ -31,11 +28,11 @@ clip() {
 	# trailing new lines.
 	pkill -f "^$sleep_argv0" 2>/dev/null && sleep 0.5
 	local before="$("${paste_cmd[@]}" 2>/dev/null | $BASE64)"
-	echo -n "$1" | "${copy_cmd[@]}" || die "Error: Could not copy data to the clipboard"
+	echo -n "$input" | "${copy_cmd[@]}" || die "Error: Could not copy data to the clipboard"
 	(
 		( exec -a "$sleep_argv0" bash <<<"trap 'kill %1' TERM; sleep '$CLIP_TIME' & wait" )
 		local now="$("${paste_cmd[@]}" | $BASE64)"
-		[[ $now != $(echo -n "$1" | $BASE64) ]] && before="$now"
+		[[ $now != $(echo -n "$input" | $BASE64) ]] && before="$now"
 
 		# It might be nice to programatically check to see if klipper exists,
 		# as well as checking for other common clipboard managers. But for now,
@@ -50,3 +47,8 @@ clip() {
 	) >/dev/null 2>&1 & disown
 	echo "Copied $2 to clipboard. Will clear in $CLIP_TIME seconds."
 }
+
+password=$(./main list | dmenu -i -p "One Password:")
+if [ -n "$password" ]; then
+  ./main show "$password" | clip
+fi
