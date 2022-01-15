@@ -97,7 +97,6 @@ func RetrieveByVault(uuid string) (*Items, error) {
 	}
 	buf := &Items{}
 	err = easyjson.Unmarshal(com, buf)
-	sort.Sort(buf)
 	if err != nil {
 		return nil, err
 	}

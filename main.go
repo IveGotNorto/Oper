@@ -12,7 +12,7 @@ type OPDisplay interface {
 }
 
 type OPInteract interface {
-	Show(string) error
+	Show(string)
 }
 
 func OpPrint(op OPDisplay) {
@@ -29,7 +29,6 @@ func OpFind(op OPDisplay, pass []string) error {
 	return err
 }
 
-func OpShow(op OPInteract, pass string) error {
-	err := op.Show(pass)
-	return err
+func OpShow(op OPInteract, pass string) {
+	op.Show(pass)
 }

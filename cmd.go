@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	items "oper/items"
+	"oper/vaults"
 	"os"
 	"time"
 
@@ -10,8 +10,7 @@ import (
 )
 
 func main() {
-	var items items.Items
-	//var vaults vaults.Vaults
+	var vaults vaults.Vaults
 
 	app := &cli.App{
 		Name:     "Oper",
@@ -30,11 +29,11 @@ func main() {
 				Aliases:     []string{"list"},
 				Description: "List passwords in the One Password Command line utility",
 				Action: func(c *cli.Context) error {
-					OpPrint(&items)
+					OpPrint(&vaults)
 					return nil
 				},
 				Before: func(c *cli.Context) error {
-					return items.Retrieve()
+					return vaults.Retrieve()
 				},
 			},
 			{
@@ -42,13 +41,13 @@ func main() {
 				Description: "Print the password under the password-name",
 				Action: func(c *cli.Context) error {
 					if c.Args().Len() >= 1 {
-						return OpShow(&items, c.Args().First())
+						OpShow(&vaults, c.Args().First())
 					}
 					return nil
 				},
 				ArgsUsage: "password-name",
 				Before: func(c *cli.Context) error {
-					return items.Retrieve()
+					return vaults.Retrieve()
 				},
 			},
 		},
