@@ -1,7 +1,6 @@
 package items
 
 import (
-	"errors"
 	"fmt"
 	"os/exec"
 	"sort"
@@ -74,20 +73,16 @@ func (i *Items) Find(pass []string) (Item, error) {
 	return Item{}, nil
 }
 
-func (i *Items) Show(entry string) error {
-	var err error = errors.New("password not found for entry: " + entry)
+func (i *Items) Show(entry string) {
 	for j := range *i {
 		if entry == (*i)[j].Overview.Title {
-			var out []byte
-			out, err = exec.Command("op", "--cache", "get", "item", (*i)[j].Uuid, "--fields", "password").Output()
+			out, err := exec.Command("op", "--cache", "get", "item", (*i)[j].Uuid, "--fields", "password").Output()
 			if err == nil {
 				// Simply print the password to the console
 				fmt.Printf("%v", string(out))
-				return nil
 			}
 		}
 	}
-	return err
 }
 
 func RetrieveByVault(uuid string) (*Items, error) {
