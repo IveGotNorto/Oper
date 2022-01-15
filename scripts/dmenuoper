@@ -1,6 +1,6 @@
 #!/bin/sh 
 
-source ./oper 
+OPSHORT="my"
 BASE64="base64"
 CLIP_TIME=45
 
@@ -47,8 +47,32 @@ clip() {
 	echo "Copied $2 to clipboard. Will clear in $CLIP_TIME seconds."
 }
 
-PASSNAME=$(./main list | dmenu -i -p "One Password:")
-if [ -n "$PASSNAME" ]; then
-  PASSWORD=$(./main show "$PASSNAME")
-  clip "$PASSWORD" "$PASSNAME"
-fi
+signin() {
+  if type "op" > /dev/null; then
+    for i in {1..3}; do
+      op list vaults &> /dev/null
+      if [ $? -eq 0 ];
+      then
+        return $?
+      fi
+      eval $(echo | dmenu -c -p 'One Password Login' | op signin "$OPSHORT")
+    done
+    return 1
+  else
+      echo "One Password command line utility not found."
+  fi
+}
+
+main() {
+  signin
+  if [ $? -eq 0 ];
+  then
+    local pass_name=$(./main list | dmenu -i -p "One Password:")
+    if [ -n "$pass_name" ]; then
+      local password=$(./main show "$pass_name")
+      clip "$password" "$pass_name"
+    fi
+  fi
+}
+
+main
