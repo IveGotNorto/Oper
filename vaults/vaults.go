@@ -78,7 +78,7 @@ func (v *Vaults) Show(passwordName string) {
 		}
 		for j := range *(*v)[i].Items {
 			if passwordName == (*(*v)[i].Items)[j].Overview.Title {
-				out, _ := exec.Command("op", "--cache", "get", "item", k.Uuid, "--fields", "password").Output()
+				out, _ := exec.Command("op", "--cache", "get", "item", (*(*v)[i].Items)[j].Uuid, "--fields", "password").Output()
 				fmt.Printf("%v", string(out))
 			}
 		}
