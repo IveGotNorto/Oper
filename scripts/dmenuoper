@@ -67,9 +67,9 @@ main() {
   signin
   if [ $? -eq 0 ];
   then
-    local pass_name=$(./main list | dmenu -i -p "One Password:")
+    local pass_name=$(oper list | dmenu -i -p "One Password:")
     if [ -n "$pass_name" ]; then
-      local password=$(./main show "$pass_name")
+      local password=$(oper show "$pass_name")
       clip "$password" "$pass_name"
     fi
   fi
