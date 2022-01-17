@@ -23,17 +23,30 @@ func main() {
 			},
 		},
 		Usage: "One Password command line wrapper",
+		Action: func(c *cli.Context) error {
+			OpPrettyPrint(&vaults)
+			return nil
+		},
+		Before: func(c *cli.Context) error {
+			return vaults.Retrieve()
+		},
 		Commands: []*cli.Command{
 			{
 				Name:        "ls",
 				Aliases:     []string{"list"},
-				Description: "List passwords in the One Password Command line utility",
+				Description: "List passwords from the One Password command line utility",
+				Action: func(c *cli.Context) error {
+					OpPrettyPrint(&vaults)
+					return nil
+				},
+			},
+			{
+				Name:        "upls",
+				Aliases:     []string{"unpretty-list"},
+				Description: "List passwords, with no formatting, from the One Password command line utility",
 				Action: func(c *cli.Context) error {
 					OpPrint(&vaults)
 					return nil
-				},
-				Before: func(c *cli.Context) error {
-					return vaults.Retrieve()
 				},
 			},
 			{
@@ -46,13 +59,7 @@ func main() {
 					return nil
 				},
 				ArgsUsage: "password-name",
-				Before: func(c *cli.Context) error {
-					return vaults.Retrieve()
-				},
 			},
-		},
-		Flags: []cli.Flag{
-			&cli.BoolFlag{},
 		},
 	}
 

@@ -42,6 +42,8 @@ type Item struct {
 //easyjson:json
 type Items []Item
 
+type MapItems map[string]*Item
+
 func (i *Items) Len() int           { return len(*i) }
 func (i *Items) Less(a, b int) bool { return (*i)[a].Overview.Title < (*i)[b].Overview.Title }
 func (i *Items) Swap(a, b int)      { (*i)[a], (*i)[b] = (*i)[b], (*i)[a] }
@@ -76,16 +78,18 @@ func (i *Items) Find(pass []string) (Item, error) {
 func (i *Items) Show(entry string) {
 	for j := range *i {
 		if entry == (*i)[j].Overview.Title {
+			var out []byte
 			out, err := exec.Command("op", "--cache", "get", "item", (*i)[j].Uuid, "--fields", "password").Output()
 			if err == nil {
 				// Simply print the password to the console
 				fmt.Printf("%v", string(out))
+				return
 			}
 		}
 	}
 }
 
-func RetrieveByVault(uuid string) (*Items, error) {
+func RetrieveByVault(uuid string) (*MapItems, error) {
 	com, err := exec.Command("op", "--cache", "list", "items", "--vault", uuid).Output()
 	if err != nil {
 		return nil, err
@@ -95,5 +99,12 @@ func RetrieveByVault(uuid string) (*Items, error) {
 	if err != nil {
 		return nil, err
 	}
-	return buf, nil
+	tmp := make(MapItems)
+	for i := range *buf {
+		_, ok := tmp[(*buf)[i].Overview.Title]
+		if !ok {
+			tmp[(*buf)[i].Overview.Title] = &(*buf)[i]
+		}
+	}
+	return &tmp, err
 }

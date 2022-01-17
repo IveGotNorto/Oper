@@ -11,13 +11,13 @@ import (
 type Vault struct {
 	Uuid     string `json:"uuid"`
 	Name     string `json:"name"`
-	Items    *items.Items
+	Items    *items.MapItems
 	numItems int
 }
 
 type VaultChannel struct {
 	Index int
-	Items *items.Items
+	Items *items.MapItems
 	Error error
 }
 
@@ -61,8 +61,8 @@ func (v *Vaults) retrieveItems() error {
 
 func (v *Vaults) Display() {
 	for i, vault := range *v {
-		for _, item := range *(*v)[i].Items {
-			fmt.Printf("%v\n", vault.Name+"/"+item.Overview.Title)
+		for k := range *(*v)[i].Items {
+			fmt.Printf("%v\n", vault.Name+"/"+(*(*(*v)[i].Items)[k]).Overview.Title)
 		}
 	}
 }
@@ -74,13 +74,12 @@ func (v *Vaults) Show(passwordName string) {
 
 	for i, vault := range *v {
 		if vault.Name != vaultName {
-			break
+			continue
 		}
-		for j := range *(*v)[i].Items {
-			if passwordName == (*(*v)[i].Items)[j].Overview.Title {
-				out, _ := exec.Command("op", "--cache", "get", "item", (*(*v)[i].Items)[j].Uuid, "--fields", "password").Output()
-				fmt.Printf("%v", string(out))
-			}
+		if _, ok := (*(*v)[i].Items)[passwordName]; ok {
+			out, _ := exec.Command("op", "--cache", "get", "item", (*(*(*v)[i].Items)[passwordName]).Uuid, "--fields", "password").Output()
+			fmt.Printf("%v", string(out))
+			return
 		}
 	}
 }
@@ -92,7 +91,7 @@ func (v *Vaults) PrettyPrint() error {
 		return err
 	}
 	numVaults := len(*v) - 1
-
+	var count int
 	for i, vault := range *v {
 
 		if i != numVaults {
@@ -100,21 +99,22 @@ func (v *Vaults) PrettyPrint() error {
 		} else {
 			fmt.Printf("└── %v\n", vault.Name)
 		}
-
-		for j, item := range *vault.Items {
+		count = 0
+		for _, item := range *vault.Items {
 			if i != numVaults {
-				if j != vault.numItems-1 {
+				if count != vault.numItems-1 {
 					fmt.Printf("│   ├── %v\n", item.Overview.Title)
 				} else {
 					fmt.Printf("│   └── %v\n", item.Overview.Title)
 				}
 			} else {
-				if j != vault.numItems-1 {
+				if count != vault.numItems-1 {
 					fmt.Printf("    ├── %v\n", item.Overview.Title)
 				} else {
 					fmt.Printf("    └── %v\n", item.Overview.Title)
 				}
 			}
+			count++
 		}
 	}
 	return nil

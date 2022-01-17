@@ -113,9 +113,31 @@ func easyjsonD5ee5d4fDecodeOperVaults1(in *jlexer.Lexer, out *Vault) {
 				out.Items = nil
 			} else {
 				if out.Items == nil {
-					out.Items = new(items.Items)
+					out.Items = new(items.MapItems)
 				}
-				(*out.Items).UnmarshalEasyJSON(in)
+				if in.IsNull() {
+					in.Skip()
+				} else {
+					in.Delim('{')
+					*out.Items = make(items.MapItems)
+					for !in.IsDelim('}') {
+						key := string(in.String())
+						in.WantColon()
+						var v4 *items.Item
+						if in.IsNull() {
+							in.Skip()
+							v4 = nil
+						} else {
+							if v4 == nil {
+								v4 = new(items.Item)
+							}
+							(*v4).UnmarshalEasyJSON(in)
+						}
+						(*out.Items)[key] = v4
+						in.WantComma()
+					}
+					in.Delim('}')
+				}
 			}
 		default:
 			in.SkipRecursive()
@@ -147,7 +169,27 @@ func easyjsonD5ee5d4fEncodeOperVaults1(out *jwriter.Writer, in Vault) {
 		if in.Items == nil {
 			out.RawString("null")
 		} else {
-			(*in.Items).MarshalEasyJSON(out)
+			if *in.Items == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
+				out.RawString(`null`)
+			} else {
+				out.RawByte('{')
+				v5First := true
+				for v5Name, v5Value := range *in.Items {
+					if v5First {
+						v5First = false
+					} else {
+						out.RawByte(',')
+					}
+					out.String(string(v5Name))
+					out.RawByte(':')
+					if v5Value == nil {
+						out.RawString("null")
+					} else {
+						(*v5Value).MarshalEasyJSON(out)
+					}
+				}
+				out.RawByte('}')
+			}
 		}
 	}
 	out.RawByte('}')
