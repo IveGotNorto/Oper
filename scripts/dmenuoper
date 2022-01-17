@@ -55,7 +55,9 @@ signin() {
       then
         return $?
       fi
-      eval $(echo | dmenu -c -p 'One Password Login' | op signin "$OPSHORT")
+      eval $(gpg --decrypt \
+        $PASSWORD_STORE_DIR/one-password/master.gpg 2>/dev/null | \
+        op signin "$OPSHORT")
     done
     return 1
   else
