@@ -1,18 +1,16 @@
-package main
+package app
 
 import (
-	"log"
-	"oper/vaults"
+	"fmt"
 	"os"
 	"time"
 
 	"github.com/urfave/cli/v2"
 )
 
-func main() {
-	var vaults vaults.Vaults
+func Run() int {
 
-	app := &cli.App{
+	cli := &cli.App{
 		Name:     "Oper",
 		Version:  "v0.0.1",
 		Compiled: time.Now(),
@@ -24,11 +22,10 @@ func main() {
 		},
 		Usage: "One Password command line wrapper",
 		Action: func(c *cli.Context) error {
-			OpPrettyPrint(&vaults)
-			return nil
+			return OpPrettyPrint()
 		},
 		Before: func(c *cli.Context) error {
-			return vaults.Retrieve()
+			return Setup()
 		},
 		Commands: []*cli.Command{
 			{
@@ -36,8 +33,7 @@ func main() {
 				Aliases:     []string{"list"},
 				Description: "List passwords from the One Password command line utility",
 				Action: func(c *cli.Context) error {
-					OpPrettyPrint(&vaults)
-					return nil
+					return OpPrettyPrint()
 				},
 			},
 			{
@@ -45,7 +41,7 @@ func main() {
 				Aliases:     []string{"unpretty-list"},
 				Description: "List passwords, with no formatting, from the One Password command line utility",
 				Action: func(c *cli.Context) error {
-					OpPrint(&vaults)
+					OpPrint()
 					return nil
 				},
 			},
@@ -54,17 +50,33 @@ func main() {
 				Description: "Print the password under the password-name",
 				Action: func(c *cli.Context) error {
 					if c.Args().Len() >= 1 {
-						OpShow(&vaults, c.Args().First())
+						OpShow(c.Args().First())
 					}
 					return nil
 				},
 				ArgsUsage: "password-name",
 			},
+			{
+				Name:        "find",
+				Aliases:     []string{"search"},
+				Description: "List names of passwords and vaults that match pass-names",
+				Action: func(c *cli.Context) error {
+					if c.Args().Present() {
+						OpFind(c.Args().Slice())
+					}
+					return nil
+				},
+				ArgsUsage: "pass-names...",
+			},
+		},
+		Flags: []cli.Flag{
+			&cli.BoolFlag{Name: "debug"},
 		},
 	}
 
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err)
+	if err := cli.Run(os.Args); err != nil {
+		fmt.Printf("%s\n", err)
+		return 1
 	}
+	return 0
 }

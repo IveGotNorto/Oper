@@ -59,15 +59,16 @@ func (v *Vaults) retrieveItems() error {
 	return nil
 }
 
-func (v *Vaults) Display() {
+func (v *Vaults) Display() error {
 	for i, vault := range *v {
 		for k := range *(*v)[i].Items {
 			fmt.Printf("%v\n", vault.Name+"/"+(*(*(*v)[i].Items)[k]).Overview.Title)
 		}
 	}
+	return nil
 }
 
-func (v *Vaults) Show(passwordName string) {
+func (v *Vaults) Show(passwordName string) error {
 	split := strings.Split(passwordName, "/")
 	vaultName := split[0]
 	passwordName = split[1]
@@ -77,23 +78,19 @@ func (v *Vaults) Show(passwordName string) {
 			continue
 		}
 		if _, ok := (*(*v)[i].Items)[passwordName]; ok {
-			out, _ := exec.Command("op", "--cache", "get", "item", (*(*(*v)[i].Items)[passwordName]).Uuid, "--fields", "password").Output()
+			out, err := exec.Command("op", "--cache", "get", "item", (*(*(*v)[i].Items)[passwordName]).Uuid, "--fields", "password").Output()
 			fmt.Printf("%v", string(out))
-			return
+			return err
 		}
 	}
+	return nil
 }
 
-func (v *Vaults) PrettyPrint() error {
-	fmt.Printf("One Password Store\n")
-	err := v.retrieveItems()
-	if err != nil {
-		return err
-	}
-	numVaults := len(*v) - 1
+func PrettyPrint(title string, vaults *Vaults) error {
+	fmt.Printf("%v\n", title)
+	numVaults := len(*vaults) - 1
 	var count int
-	for i, vault := range *v {
-
+	for i, vault := range *vaults {
 		if i != numVaults {
 			fmt.Printf("├── %v\n", vault.Name)
 		} else {
@@ -120,6 +117,40 @@ func (v *Vaults) PrettyPrint() error {
 	return nil
 }
 
-func (v *Vaults) Find(pass []string) (items.Item, error) {
-	return items.Item{}, nil
+func (v *Vaults) Find(sub []string) (Vaults, error) {
+	var vaults Vaults
+	found := false
+	for i, vault := range *v {
+		items := make(items.MapItems)
+		if contains(vault.Name, sub) {
+			vaults = append(vaults, (*v)[i])
+		} else {
+			for key := range *(*v)[i].Items {
+				if contains(key, sub) {
+					found = true
+					items[key] = (*(*v)[i].Items)[key]
+				}
+			}
+			if found {
+				tmp := new(Vault)
+				*tmp = (*v)[i]
+				tmp.Items = &items
+				tmp.numItems = len(items)
+				vaults = append(vaults, *tmp)
+			}
+			found = false
+		}
+	}
+	return vaults, nil
+}
+
+func contains(val string, sub []string) bool {
+	equal := false
+	for _, s := range sub {
+		if strings.Contains(val, s) {
+			equal = true
+			break
+		}
+	}
+	return equal
 }
