@@ -2,13 +2,14 @@ package app
 
 import (
 	"fmt"
+	"oper/store"
 	"os"
 	"time"
 
 	"github.com/urfave/cli/v2"
 )
 
-func Run() int {
+func Run(store store.PasswordStore) int {
 
 	cli := &cli.App{
 		Name:     "Oper",
@@ -22,10 +23,10 @@ func Run() int {
 		},
 		Usage: "One Password command line wrapper",
 		Action: func(c *cli.Context) error {
-			return OpPrettyPrint()
+			return store.TreeList()
 		},
 		Before: func(c *cli.Context) error {
-			return Setup()
+			return store.Setup()
 		},
 		Commands: []*cli.Command{
 			{
@@ -33,7 +34,7 @@ func Run() int {
 				Aliases:     []string{"list"},
 				Description: "List passwords from the One Password command line utility",
 				Action: func(c *cli.Context) error {
-					return OpPrettyPrint()
+					return store.TreeList()
 				},
 			},
 			{
@@ -41,8 +42,7 @@ func Run() int {
 				Aliases:     []string{"unpretty-list"},
 				Description: "List passwords, with no formatting, from the One Password command line utility",
 				Action: func(c *cli.Context) error {
-					OpPrint()
-					return nil
+					return store.List()
 				},
 			},
 			{
@@ -50,11 +50,14 @@ func Run() int {
 				Description: "Print the password under the password-name",
 				Action: func(c *cli.Context) error {
 					if c.Args().Len() >= 1 {
-						OpShow(c.Args().First())
+						store.Show(c.Args().First())
 					}
 					return nil
 				},
 				ArgsUsage: "password-name",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{Name: "copy"},
+				},
 			},
 			{
 				Name:        "find",
@@ -62,11 +65,28 @@ func Run() int {
 				Description: "List names of passwords and vaults that match pass-names",
 				Action: func(c *cli.Context) error {
 					if c.Args().Present() {
-						OpFind(c.Args().Slice())
+						store.Find(c.Args().Slice())
 					}
 					return nil
 				},
 				ArgsUsage: "pass-names...",
+			},
+			{
+				Name:        "insert",
+				Aliases:     []string{"add"},
+				Description: "",
+				Action: func(c *cli.Context) error {
+					if c.Args().Present() {
+						return store.Insert(c.Args().First())
+					}
+					return nil
+				},
+				ArgsUsage: "pass-name",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{Name: "echo"},
+					&cli.BoolFlag{Name: "multiline"},
+					&cli.BoolFlag{Name: "force"},
+				},
 			},
 		},
 		Flags: []cli.Flag{

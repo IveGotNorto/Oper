@@ -1,9 +1,9 @@
 package vaults
 
 import (
+	"errors"
 	"fmt"
-	items "oper/items"
-	"os/exec"
+	items "oper/one-password/items"
 	"strings"
 )
 
@@ -25,11 +25,7 @@ type VaultChannel struct {
 type Vaults []Vault
 
 func (v *Vaults) Retrieve() error {
-	out, err := exec.Command("op", "--cache", "list", "vaults").Output()
-	if err != nil {
-		return err
-	}
-	err = v.UnmarshalJSON(out)
+	err := v.getVaults()
 	if err != nil {
 		return err
 	}
@@ -51,6 +47,9 @@ func (v *Vaults) retrieveItems() error {
 
 	var vc VaultChannel
 	for range *v {
+		if vc.Error != nil {
+			return vc.Error
+		}
 		vc = <-c
 		(*v)[vc.Index].Items = vc.Items
 		(*v)[vc.Index].numItems = len(*vc.Items)
@@ -59,7 +58,7 @@ func (v *Vaults) retrieveItems() error {
 	return nil
 }
 
-func (v *Vaults) Display() error {
+func (v *Vaults) List() error {
 	for i, vault := range *v {
 		for k := range *(*v)[i].Items {
 			fmt.Printf("%v\n", vault.Name+"/"+(*(*(*v)[i].Items)[k]).Overview.Title)
@@ -68,7 +67,7 @@ func (v *Vaults) Display() error {
 	return nil
 }
 
-func (v *Vaults) Show(passwordName string) error {
+func (v *Vaults) Show(passwordName string) (string, error) {
 	split := strings.Split(passwordName, "/")
 	vaultName := split[0]
 	passwordName = split[1]
@@ -78,15 +77,18 @@ func (v *Vaults) Show(passwordName string) error {
 			continue
 		}
 		if _, ok := (*(*v)[i].Items)[passwordName]; ok {
-			out, err := exec.Command("op", "--cache", "get", "item", (*(*(*v)[i].Items)[passwordName]).Uuid, "--fields", "password").Output()
-			fmt.Printf("%v", string(out))
-			return err
+			pass, err := getPassword((*(*(*v)[i].Items)[passwordName]).Uuid)
+			return pass, err
 		}
 	}
-	return nil
+	return "", errors.New("password not found")
 }
 
-func PrettyPrint(title string, vaults *Vaults) error {
+func (v *Vaults) TreeList() error {
+	return Print("One Password Store", v)
+}
+
+func Print(title string, vaults *Vaults) error {
 	fmt.Printf("%v\n", title)
 	numVaults := len(*vaults) - 1
 	var count int
@@ -117,7 +119,7 @@ func PrettyPrint(title string, vaults *Vaults) error {
 	return nil
 }
 
-func (v *Vaults) Find(sub []string) (Vaults, error) {
+func (v *Vaults) FindPassword(sub []string) (Vaults, error) {
 	var vaults Vaults
 	found := false
 	for i, vault := range *v {
@@ -153,4 +155,24 @@ func contains(val string, sub []string) bool {
 		}
 	}
 	return equal
+}
+
+func (v *Vaults) Insert(vault string, title string, password string) error {
+	var err error
+	password = "password=" + password
+	if vault != "" {
+		err = createPasswordInVault(vault, title, password)
+	} else {
+		err = createPassword(title, password)
+	}
+	return err
+}
+
+func (v *Vaults) VerifyContainerByName(name string) bool {
+	for _, vault := range *v {
+		if vault.Name == name {
+			return true
+		}
+	}
+	return false
 }

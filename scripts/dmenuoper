@@ -3,6 +3,7 @@
 OPSHORT="my"
 BASE64="base64"
 CLIP_TIME=45
+X_SELECTION="clipboard"
 
 clip() {
 	if [[ -n $WAYLAND_DISPLAY ]] && command -v wl-copy &> /dev/null; then

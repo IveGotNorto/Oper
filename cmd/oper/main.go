@@ -2,9 +2,11 @@ package main
 
 import (
 	"oper/app"
+	"oper/store"
 	"os"
 )
 
 func main() {
-	os.Exit(app.Run())
+	var store store.OPStore
+	os.Exit(app.Run(store))
 }

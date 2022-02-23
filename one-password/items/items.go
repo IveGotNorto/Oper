@@ -1,13 +1,5 @@
 package items
 
-import (
-	"fmt"
-	"os/exec"
-	"sort"
-
-	easyjson "github.com/mailru/easyjson"
-)
-
 //easyjson:json
 type URL struct {
 	L string `json:"l"`
@@ -48,57 +40,8 @@ func (i *Items) Len() int           { return len(*i) }
 func (i *Items) Less(a, b int) bool { return (*i)[a].Overview.Title < (*i)[b].Overview.Title }
 func (i *Items) Swap(a, b int)      { (*i)[a], (*i)[b] = (*i)[b], (*i)[a] }
 
-func (i *Items) Retrieve() error {
-	out, err := exec.Command("op", "--cache", "list", "items", "--categories", "Login").Output()
-	if err != nil {
-		return err
-	}
-	err = i.UnmarshalJSON(out)
-	if err != nil {
-		return err
-	}
-	sort.Sort(i)
-	return err
-}
-
-func (i *Items) Display() {
-	for _, item := range *i {
-		fmt.Printf("%v\n", item.Overview.Title)
-	}
-}
-
-func (i *Items) PrettyPrint() error {
-	return nil
-}
-
-func (i *Items) Find(pass []string) (Item, error) {
-	return Item{}, nil
-}
-
-func (i *Items) Show(entry string) {
-	for j := range *i {
-		if entry == (*i)[j].Overview.Title {
-			var out []byte
-			out, err := exec.Command("op", "--cache", "get", "item", (*i)[j].Uuid, "--fields", "password").Output()
-			if err == nil {
-				// Simply print the password to the console
-				fmt.Printf("%v", string(out))
-				return
-			}
-		}
-	}
-}
-
 func RetrieveByVault(uuid string) (*MapItems, error) {
-	com, err := exec.Command("op", "--cache", "list", "items", "--vault", uuid).Output()
-	if err != nil {
-		return nil, err
-	}
-	buf := &Items{}
-	err = easyjson.Unmarshal(com, buf)
-	if err != nil {
-		return nil, err
-	}
+	buf, err := getItems(uuid)
 	tmp := make(MapItems)
 	for i := range *buf {
 		_, ok := tmp[(*buf)[i].Overview.Title]
