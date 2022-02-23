@@ -1,5 +1,11 @@
 package store
 
+type StoreArguments struct {
+	Cache   bool
+	Verbose bool
+	Debug   bool
+}
+
 type PasswordStore interface {
 	List() error
 	TreeList() error
@@ -11,7 +17,7 @@ type PasswordStore interface {
 	Remove() error
 	Move() error
 	Copy() error
-	Setup() error
+	Setup(StoreArguments) error
 }
 
 type StoreCommands interface {

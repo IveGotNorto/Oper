@@ -2,10 +2,10 @@ package vaults
 
 import "oper/one-password/commands"
 
-var op commands.OnePasswordCommands
+var Commands commands.OnePasswordCommands
 
 func getPassword(itemUuid string) (string, error) {
-	buff, err := op.GetPassword(itemUuid)
+	buff, err := Commands.GetPassword(itemUuid)
 	if err != nil {
 		return "", err
 	}
@@ -13,7 +13,7 @@ func getPassword(itemUuid string) (string, error) {
 }
 
 func (v *Vaults) getVaults() error {
-	out, err := op.GetContainers()
+	out, err := Commands.GetContainers()
 	if err != nil {
 		return err
 	}
@@ -25,9 +25,9 @@ func (v *Vaults) getVaults() error {
 }
 
 func createPassword(title string, password string) error {
-	return op.CreatePasswordDefaultContainer(title, password)
+	return Commands.CreatePasswordDefaultContainer(title, password)
 }
 
 func createPasswordInVault(container string, title string, password string) error {
-	return op.CreatePasswordInContainer(container, title, password)
+	return Commands.CreatePasswordInContainer(container, title, password)
 }

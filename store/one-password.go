@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"oper/one-password/commands"
 	"oper/one-password/vaults"
 	"strings"
 	"syscall"
@@ -16,7 +17,12 @@ var pass vaults.Vaults
 type OPStore struct {
 }
 
-func (st OPStore) Setup() error {
+func (st OPStore) Setup(args StoreArguments) error {
+	vaults.Commands = commands.OnePasswordCommands{
+		Cache:   args.Cache,
+		Verbose: args.Verbose,
+		Debug:   args.Debug,
+	}
 	return pass.Retrieve()
 }
 
