@@ -70,7 +70,7 @@ main() {
   signin
   if [ $? -eq 0 ];
   then
-    local pass_name=$(oper upls | dmenu -i -p "One Password:")
+    local pass_name=$(oper --cache upls | dmenu -i -p "One Password:")
     if [ -n "$pass_name" ]; then
       local password=$(oper show "$pass_name")
       clip "$password" "$pass_name"
