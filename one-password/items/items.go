@@ -36,10 +36,6 @@ type Items []Item
 
 type MapItems map[string]*Item
 
-func (i *Items) Len() int           { return len(*i) }
-func (i *Items) Less(a, b int) bool { return (*i)[a].Overview.Title < (*i)[b].Overview.Title }
-func (i *Items) Swap(a, b int)      { (*i)[a], (*i)[b] = (*i)[b], (*i)[a] }
-
 func RetrieveByVault(uuid string) (*MapItems, error) {
 	buf, err := getItems(uuid)
 	tmp := make(MapItems)

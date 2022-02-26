@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	items "oper/one-password/items"
+	"sort"
 	"strings"
 )
 
@@ -58,11 +59,35 @@ func (v *Vaults) retrieveItems() error {
 	return nil
 }
 
-func (v *Vaults) List() error {
+func (v *Vaults) Sort(order int) {
+	asc := func(i, j int) bool { return (*v)[i].Name < (*v)[j].Name }
+	desc := func(i, j int) bool { return (*v)[i].Name > (*v)[j].Name }
+	if order == 0 {
+		sort.Slice(*v, asc)
+	} else {
+		sort.Slice(*v, desc)
+	}
+}
+
+func (v *Vaults) List(order int) error {
+	v.Sort(order)
+
+	var buff []string
 	for i, vault := range *v {
-		for k := range *(*v)[i].Items {
-			fmt.Printf("%v\n", vault.Name+"/"+(*(*(*v)[i].Items)[k]).Overview.Title)
+		for key := range *(*v)[i].Items {
+			buff = append(buff, key)
 		}
+
+		if order == 0 {
+			sort.Strings(buff)
+		} else {
+			sort.Sort(sort.Reverse(sort.StringSlice(buff)))
+		}
+
+		for _, keyName := range buff {
+			fmt.Printf("%v\n", vault.Name+"/"+keyName)
+		}
+		buff = nil
 	}
 	return nil
 }
@@ -84,37 +109,55 @@ func (v *Vaults) Show(passwordName string) (string, error) {
 	return "", errors.New("password not found")
 }
 
-func (v *Vaults) TreeList() error {
-	return Print("One Password Store", v)
+func (v *Vaults) TreeList(order int) error {
+	v.Sort(order)
+	return Print("One Password Store", v, order)
 }
 
-func Print(title string, vaults *Vaults) error {
+func Print(title string, vaults *Vaults, order int) error {
 	fmt.Printf("%v\n", title)
 	numVaults := len(*vaults) - 1
 	var count int
+
+	var keys []string
 	for i, vault := range *vaults {
 		if i != numVaults {
 			fmt.Printf("├── %v\n", vault.Name)
 		} else {
 			fmt.Printf("└── %v\n", vault.Name)
 		}
+
+		// Im sorry
+		for k := range *vault.Items {
+			keys = append(keys, k)
+		}
+
+		if order == 0 {
+			sort.Strings(keys)
+		} else {
+			sort.Sort(sort.Reverse(sort.StringSlice(keys)))
+		}
+
 		count = 0
-		for _, item := range *vault.Items {
+		for _, key := range keys {
 			if i != numVaults {
 				if count != vault.numItems-1 {
-					fmt.Printf("│   ├── %v\n", item.Overview.Title)
+					fmt.Printf("│   ├── %v\n", key)
 				} else {
-					fmt.Printf("│   └── %v\n", item.Overview.Title)
+					fmt.Printf("│   └── %v\n", key)
 				}
 			} else {
 				if count != vault.numItems-1 {
-					fmt.Printf("    ├── %v\n", item.Overview.Title)
+					fmt.Printf("    ├── %v\n", key)
 				} else {
-					fmt.Printf("    └── %v\n", item.Overview.Title)
+					fmt.Printf("    └── %v\n", key)
 				}
 			}
 			count++
 		}
+
+		// clear keys buffer
+		keys = nil
 	}
 	return nil
 }

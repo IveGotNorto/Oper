@@ -23,7 +23,7 @@ func Run(pass store.PasswordStore) int {
 		},
 		Usage: "One Password command line wrapper",
 		Action: func(c *cli.Context) error {
-			return pass.TreeList()
+			return pass.TreeList("ascending")
 		},
 		Before: func(c *cli.Context) error {
 			return pass.Setup(store.StoreArguments{
@@ -38,7 +38,10 @@ func Run(pass store.PasswordStore) int {
 				Aliases:     []string{"list"},
 				Description: "List passwords from the One Password command line utility",
 				Action: func(c *cli.Context) error {
-					return pass.TreeList()
+					return pass.TreeList(c.String("order"))
+				},
+				Flags: []cli.Flag{
+					&cli.StringFlag{Name: "order", Aliases: []string{"o"}, Value: "ascending"},
 				},
 			},
 			{
@@ -46,7 +49,10 @@ func Run(pass store.PasswordStore) int {
 				Aliases:     []string{"unpretty-list"},
 				Description: "List passwords, with no formatting, from the One Password command line utility",
 				Action: func(c *cli.Context) error {
-					return pass.List()
+					return pass.List(c.String("order"))
+				},
+				Flags: []cli.Flag{
+					&cli.StringFlag{Name: "order", Aliases: []string{"o"}, Value: "ascending"},
 				},
 			},
 			{

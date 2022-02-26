@@ -26,12 +26,12 @@ func (st OPStore) Setup(args StoreArguments) error {
 	return pass.Retrieve()
 }
 
-func (st OPStore) List() error {
-	return pass.List()
+func (st OPStore) List(order string) error {
+	return pass.List(selectSortingOrder(order))
 }
 
-func (st OPStore) TreeList() error {
-	return pass.TreeList()
+func (st OPStore) TreeList(order string) error {
+	return pass.TreeList(selectSortingOrder(order))
 }
 
 func (st OPStore) Find(terms []string) error {
@@ -39,7 +39,7 @@ func (st OPStore) Find(terms []string) error {
 	heading := "Search Terms: "
 	constructTerms(&heading, terms)
 	if err == nil {
-		err = vaults.Print(heading, &entries)
+		err = vaults.Print(heading, &entries, 0)
 	}
 	return err
 }
@@ -90,6 +90,16 @@ func constructTerms(pre *string, terms []string) {
 			*pre += ","
 		}
 	}
+}
+
+func selectSortingOrder(order string) int {
+	var enumOrder int
+	if strings.Contains(order, "desc") {
+		enumOrder = Descending
+	} else {
+		enumOrder = Ascending
+	}
+	return enumOrder
 }
 
 func (st OPStore) Edit() error {

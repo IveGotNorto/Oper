@@ -7,8 +7,8 @@ type StoreArguments struct {
 }
 
 type PasswordStore interface {
-	List() error
-	TreeList() error
+	List(string) error
+	TreeList(string) error
 	Find([]string) error
 	Show(string) error
 	Insert(string) error
@@ -27,3 +27,8 @@ type StoreCommands interface {
 	CreatePasswordDefaultContainer() error
 	GetPasswordsByContainer(string) ([]byte, error)
 }
+
+const (
+	Ascending int = 0
+	Descending
+)
