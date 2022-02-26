@@ -29,6 +29,6 @@ type StoreCommands interface {
 }
 
 const (
-	Ascending int = 0
-	Descending
+	Ascending  = 0
+	Descending = 1
 )
