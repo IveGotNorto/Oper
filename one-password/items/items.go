@@ -12,7 +12,7 @@ type Overview struct {
 	Ainfo string   `json:"ainfo"`
 	Pbe   float64  `json:"pbe"`
 	Pgrng bool     `json:"pgrng"`
-	Ps    int      `json:"ps"`
+	Ps    float64  `json:"ps"`
 	Tags  []string `json:"tags"`
 	Title string   `json:"title"`
 	Url   string   `json:"url"`
