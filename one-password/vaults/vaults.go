@@ -42,16 +42,20 @@ func (v *Vaults) retrieveItems() error {
 	for i, vault := range *v {
 		go func(vs Vault, in int) {
 			vItems, err := items.RetrieveByVault(vs.Uuid)
-			c <- VaultChannel{in, vItems, err}
+			if err != nil {
+				c <- VaultChannel{in, nil, err}
+			} else {
+				c <- VaultChannel{in, vItems, nil}
+			}
 		}(vault, i)
 	}
 
 	var vc VaultChannel
 	for range *v {
+		vc = <-c
 		if vc.Error != nil {
 			return vc.Error
 		}
-		vc = <-c
 		(*v)[vc.Index].Items = vc.Items
 		(*v)[vc.Index].numItems = len(*vc.Items)
 	}

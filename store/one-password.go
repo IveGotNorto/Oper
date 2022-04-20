@@ -23,7 +23,11 @@ func (st OPStore) Setup(args StoreArguments) error {
 		Verbose: args.Verbose,
 		Debug:   args.Debug,
 	}
-	return pass.Retrieve()
+	err := pass.Retrieve()
+	if err != nil {
+		return fmt.Errorf("unable to retrieve one password items")
+	}
+	return err
 }
 
 func (st OPStore) List(order string) error {

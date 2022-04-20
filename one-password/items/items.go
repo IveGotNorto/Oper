@@ -38,6 +38,9 @@ type MapItems map[string]*Item
 
 func RetrieveByVault(uuid string) (*MapItems, error) {
 	buf, err := getItems(uuid)
+	if err != nil {
+		return nil, err
+	}
 	tmp := make(MapItems)
 	for i := range *buf {
 		_, ok := tmp[(*buf)[i].Overview.Title]
