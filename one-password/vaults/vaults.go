@@ -203,23 +203,3 @@ func contains(val string, sub []string) bool {
 	}
 	return equal
 }
-
-func (v *Vaults) Insert(vault string, title string, password string) error {
-	var err error
-	password = "password=" + password
-	if vault != "" {
-		err = createPasswordInVault(vault, title, password)
-	} else {
-		err = createPassword(title, password)
-	}
-	return err
-}
-
-func (v *Vaults) VerifyContainerByName(name string) bool {
-	for _, vault := range *v {
-		if vault.Name == name {
-			return true
-		}
-	}
-	return false
-}

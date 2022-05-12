@@ -9,14 +9,7 @@ type StoreArguments struct {
 type PasswordStore interface {
 	List(string) error
 	TreeList(string) error
-	Find([]string) error
 	Show(string) error
-	Insert(string) error
-	Edit() error
-	Generate() error
-	Remove() error
-	Move() error
-	Copy() error
 	Setup(StoreArguments) error
 }
 
