@@ -32,11 +32,12 @@ type Item struct {
 }
 
 //easyjson:json
+// Items is used for parsing purposes
 type Items []Item
 
 type MapItems map[string]*Item
 
-func RetrieveByVault(uuid string) (*MapItems, error) {
+func GetMap(uuid string) (*ItemMap, error) {
 	buf, err := getItems(uuid)
 	if err != nil {
 		return nil, err

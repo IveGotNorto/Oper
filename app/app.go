@@ -69,35 +69,6 @@ func Run(pass store.PasswordStore) int {
 					&cli.BoolFlag{Name: "copy"},
 				},
 			},
-			{
-				Name:        "find",
-				Aliases:     []string{"search"},
-				Description: "List names of passwords and vaults that match pass-names",
-				Action: func(c *cli.Context) error {
-					if c.Args().Present() {
-						pass.Find(c.Args().Slice())
-					}
-					return nil
-				},
-				ArgsUsage: "pass-names...",
-			},
-			{
-				Name:        "insert",
-				Aliases:     []string{"add"},
-				Description: "",
-				Action: func(c *cli.Context) error {
-					if c.Args().Present() {
-						return pass.Insert(c.Args().First())
-					}
-					return nil
-				},
-				ArgsUsage: "pass-name",
-				Flags: []cli.Flag{
-					&cli.BoolFlag{Name: "echo"},
-					&cli.BoolFlag{Name: "multiline"},
-					&cli.BoolFlag{Name: "force"},
-				},
-			},
 		},
 		Flags: []cli.Flag{
 			&cli.BoolFlag{Name: "debug"},

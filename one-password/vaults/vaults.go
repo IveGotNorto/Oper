@@ -8,14 +8,7 @@ import (
 	"strings"
 )
 
-//easyjson:json
-type Vault struct {
-	Uuid     string `json:"uuid"`
-	Name     string `json:"name"`
-	Items    *items.MapItems
-	numItems int
-}
-
+// Used for retrieving vaults
 type VaultChannel struct {
 	Index int
 	Items *items.MapItems
@@ -40,14 +33,17 @@ func (v *Vaults) Retrieve() error {
 func (v *Vaults) retrieveItems() error {
 	c := make(chan VaultChannel)
 	for i, vault := range *v {
+
 		go func(vs Vault, in int) {
+      vs.GetItems()
 			vItems, err := items.RetrieveByVault(vs.Uuid)
 			if err != nil {
 				c <- VaultChannel{in, nil, err}
 			} else {
-				c <- VaultChannel{in, vItems, nil}
+				c <- VaultChannel{in, vs.Items, nil}
 			}
 		}(vault, i)
+
 	}
 
 	var vc VaultChannel
